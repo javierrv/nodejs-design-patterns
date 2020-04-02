@@ -6,9 +6,18 @@ const utilities = require('./utilities');
 const cheerio = require('cheerio');
 
 function spider(url, callback) {
-  request(url, (err, response, body) => {
-    console.log(extractLinksFromBody(body));
-    callback(null, url);
+  const filename = utilities.urlToFilename(url);
+  fs.exists(filename, exists => {
+    if(exists) {
+      return callback(null);
+    }
+    request(url, (err, response, body) => {
+      if (err) {
+        callback(err);
+      }
+      extractLinksFromBody(body);
+      callback(null, url);
+    });
   });
 };
 
@@ -16,11 +25,18 @@ function extractLinksFromBody(body) {
   const $ = cheerio.load(body);
   const links = $('a');
 
-  const result = Object.values(links).map((link) => {
-    return link.attribs ? JSON.parse(JSON.stringify(link.attribs)).href : '';
+  links.each((i, elem) => {
+    console.log($(this).text());
   });
 
-  return result;
+  Object.values(links).forEach((link, index) => {
+    // console.log(link.attribs && JSON.parse(JSON.stringify(link.attribs)).href ? index : '');
+    const dir = './' + (link.attribs && JSON.parse(JSON.stringify(link.attribs)).href ? index : '');
+
+    // if(!fs.existsSync(dir)){
+    //   fs.mkdirSync(dir);
+    // }
+  });
 }
 
 spider(process.argv[2], (err, url) => {
