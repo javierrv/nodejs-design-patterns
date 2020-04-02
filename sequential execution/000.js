@@ -7,12 +7,21 @@ const cheerio = require('cheerio');
 
 function spider(url, callback) {
   request(url, (err, response, body) => {
-    const $ = cheerio.load(body);
-    const a = $('a');
-    console.log(a.text());
+    console.log(extractLinksFromBody(body));
     callback(null, url);
   });
 };
+
+function extractLinksFromBody(body) {
+  const $ = cheerio.load(body);
+  const links = $('a');
+
+  const result = Object.values(links).map((link) => {
+    return link.attribs ? JSON.parse(JSON.stringify(link.attribs)).href : '';
+  });
+
+  return result;
+}
 
 spider(process.argv[2], (err, url) => {
   if (err) {
@@ -20,7 +29,3 @@ spider(process.argv[2], (err, url) => {
   }
   console.log(url);
 });
-
-
-// find links in a website then it prints all the its titles
-// node index http://www.facebook.com
