@@ -1,4 +1,3 @@
-
 const request = require('request');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
@@ -54,3 +53,6 @@ spider(process.argv[2], (err, filename, downloaded) => {
     console.log(`"${filename}" was already downloaded`);
   }
 });
+
+
+// find links in a website then it print all the link titles
