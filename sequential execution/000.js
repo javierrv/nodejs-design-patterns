@@ -23,19 +23,23 @@ function spider(url, callback) {
 
 function extractLinksFromBody(body) {
   const $ = cheerio.load(body);
-  const links = $('a');
+  const parentDirectory = './links';
 
-  links.each((i, elem) => {
-    console.log($(this).text());
-  });
+  if(!fs.existsSync(parentDirectory)){
+    fs.mkdirSync(parentDirectory);
+  }
 
-  Object.values(links).forEach((link, index) => {
-    // console.log(link.attribs && JSON.parse(JSON.stringify(link.attribs)).href ? index : '');
-    const dir = './' + (link.attribs && JSON.parse(JSON.stringify(link.attribs)).href ? index : '');
+  $('body').find('a').each((i, elem) => {
+    // console.log($(elem).text());
+    let dir = parentDirectory + '/';
+    
+    if ($(elem).text() !== '') {
+      dir += $(elem).text();
+    }
 
-    // if(!fs.existsSync(dir)){
-    //   fs.mkdirSync(dir);
-    // }
+    if(!fs.existsSync(dir)){
+      fs.mkdirSync(dir);
+    }
   });
 }
 
