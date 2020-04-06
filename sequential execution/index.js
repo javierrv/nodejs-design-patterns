@@ -14,23 +14,17 @@ function spider(url, callback) {
 
 function extractLinksFromBody(body) {
   const $ = cheerio.load(body);
-  const parentDirectory = './links';
-
-  if(!fs.existsSync(parentDirectory)){
-    fs.mkdirSync(parentDirectory);
-  }
+  let stream = fs.createWriteStream('medium', {
+    flags: 'a'
+  });
 
   $('body').find('a').each((i, elem) => {
-    let dir = parentDirectory + '/';
-    
     if ($(elem).text() !== '') {
-      dir += $(elem).text();
-    }
-
-    if(!fs.existsSync(dir)){
-      fs.mkdirSync(dir);
+      stream.write($(elem).attr('href') + '\n');
     }
   });
+
+  stream.end();
 }
 
 spider(process.argv[2], (err, url) => {
@@ -41,3 +35,4 @@ spider(process.argv[2], (err, url) => {
 });
 
 // executes a synchronous operation on each item in collection
+// modifying it to create only a file with the links
