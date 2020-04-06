@@ -39,3 +39,5 @@ spider(process.argv[2], (err, url) => {
   }
   console.log(`directories created for `, url);
 });
+
+// executes a synchronous operation on each item in collection
