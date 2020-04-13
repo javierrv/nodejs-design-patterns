@@ -3,29 +3,29 @@ const fs = require('fs');
 const readline = require('readline');
 const cheerio = require('cheerio');
 
-function spider(url, callback) {
+function spider(url, nesting, callback) {
   request(url, (err, response, body) => {
     if (err) {
       callback(err);
     }
-    if (!fs.existsSync('medium')) {
-      extractLinksFromBody(body);
+    if (!fs.existsSync('medium-level-' + nesting)) {
+      extractLinksFromBody(body, nesting);
     } else {
-      createDirectories();
+      createDirectories(nesting, callback);
     }
     callback(null, url);
   });
 };
 
-function extractLinksFromBody(body) {
+function extractLinksFromBody(body, nesting) {
   const $ = cheerio.load(body);
   
-  let stream = fs.createWriteStream('medium', {
+  let stream = fs.createWriteStream('medium-level-' + nesting, {
     flags: 'a'
   });
 
   $('body').find('a').each((i, elem) => {
-    if ($(elem).text() !== '') { 
+    if ($(elem).text() !== '' && $(elem).attr('href').substring(0, 8) === 'https://') { 
       stream.write($(elem).text() + '\t' + $(elem).attr('href') + '\n');
     }
   });
@@ -33,16 +33,20 @@ function extractLinksFromBody(body) {
   stream.end();
 }
 
-function createDirectories() {
-  const parentDirectory = './links';
+function createDirectories(nesting, callback) {
+  if (nesting === 0) {
+    return process.nextTick(callback);
+  }
+
+  const parentDirectory = './level-' + nesting + '-links';
 
   if(!fs.existsSync(parentDirectory)){
     fs.mkdirSync(parentDirectory);
   }
 
-  if (fs.existsSync('medium')) {
+  if (fs.existsSync('medium-level-' + nesting)) {
     const rl = readline.createInterface({
-      input: fs.createReadStream('medium'),
+      input: fs.createReadStream('medium-level-' + nesting),
       output: process.stdout,
       terminal: false
     });
@@ -55,12 +59,17 @@ function createDirectories() {
       if(!fs.existsSync(dir)){
         fs.mkdirSync(dir);
       }
-      // call spiderLinks
+
+      spider(lineCopy[1], nesting - 1, err => {
+        if (err) {
+          return callback(err);
+        }
+      });
     });
   }
 }
 
-spider(process.argv[2], (err, url) => {
+spider(process.argv[2], 1, (err, url) => {
   if (err) {
     console.log(err);
   }
