@@ -1,19 +1,30 @@
 const request = require('request');
 const fs = require('fs');
+const utilities = require('./utilities');
 const cheerio = require('cheerio');
 
 function spider(url, callback) {
-  request(url, (err, response, body) => {
-    if (err) {
-      callback(err);
+  const filename = utilities.urlToFilename(url);
+
+  fs.exists(filename, exists => {
+    if (exists) {
+      return callback(null, filename);
     }
-    extractLinksFromBody(body);
-    callback(null, url);
+
+    request(url, (err, response, body) => {
+      if (err) {
+        callback(err);
+      }
+
+      extractLinksFromBody(body);
+      callback(null, url);
+    });
   });
 };
 
 function extractLinksFromBody(body) {
   const $ = cheerio.load(body);
+
   let stream = fs.createWriteStream('medium', {
     flags: 'a'
   });
