@@ -49,14 +49,12 @@ function createDirectories(nesting, callback) {
   }
 }
 
-// spider(process.argv[2], 1, (err, url) => {
-//   if (err) {
-//     console.log(err);
-//   }
-//   console.log(`directories created for `, url);
-// });
-
-fs.rmdirSync('level-2-links');
+spider(process.argv[2], 2, (err, url) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log(`directories created for `, url);
+});
 
 // modify this to create a file with the urls
 
