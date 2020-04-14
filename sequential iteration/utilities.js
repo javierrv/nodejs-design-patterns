@@ -27,7 +27,7 @@ module.exports.extractLinksFromBody = function(body, nesting) {
   const $ = cheerio.load(body);
   let links = [];
   
-  let stream = fs.createWriteStream('medium-level-' + nesting, {
+  let stream = fs.createWriteStream('medium-level-' + nesting + '_' +(nesting - 1), {
     flags: 'a'
   });
 

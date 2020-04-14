@@ -9,24 +9,30 @@ function spider(url, nesting, callback) {
     if (err) {
       callback(err);
     }
-    if (!fs.existsSync('medium-level-' + nesting)) {
-      utilities.extractLinksFromBody(body, nesting);
-      createDirectories(nesting, callback);
+    if (!fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
+      createDirectories(body,nesting, callback);
     }
     callback(null, url);
   });
 };
 
-function createDirectories(nesting, callback) {
-  const parentDirectory = './level-' + nesting + '-links';
+function createDirectories(body, nesting, callback) {
+  if (nesting === 0) {
+    console.log('nesting', nesting);
+    return process.nextTick(callback);
+  }
+
+  utilities.extractLinksFromBody(body, nesting);
+
+  const parentDirectory = './level-' + nesting + '_' + (nesting - 1) + '-links';
 
   if(!fs.existsSync(parentDirectory)){
     fs.mkdirSync(parentDirectory);
   }
 
-  if (fs.existsSync('medium-level-' + nesting)) {
+  if (fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
     const rl = readline.createInterface({
-      input: fs.createReadStream('medium-level-' + nesting),
+      input: fs.createReadStream('medium-level-' + nesting + '_' + (nesting - 1)),
       output: process.stdout,
       terminal: false
     });
@@ -59,17 +65,17 @@ spider(process.argv[2], 2, (err, url) => {
 // modify this to create a file with the urls
 
 // spider(2)
-// 1.- creates a file (medium-level-2)
+// 1.- creates a file (medium-level-2_1)
   // link 2_1
   // link 2_2
   // link 2_3
 // 2.- create directories for that file (level-2_1-links)
   // dir link 2_1
     // spider (1)
-      // 1.- create a file (medium-level-1)
+      // 1.- create a file (medium-level-1_0)
         // link 1_1
         // link 1_2
-      // 2.- create directories for that file (level-1_1-links)
+      // 2.- create directories for that file (level-1_0-links)
         // dir link 1_1
           // spider (0)
           // nextTick
