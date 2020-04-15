@@ -15,7 +15,7 @@ function spider(url, callback) {
         return callback(err);
       }
       callback(null, filename, true);
-    })
+    });
   });
 }
 
