@@ -39,7 +39,7 @@ function download(url, filename, callback) {
         return callback(err);
       }
       console.log(`Downloaded and saved: ${url}`);
-      callback(null, body);
+      callback(null, body); // why only (null, body)? body is not used
     });
   });
 }
@@ -56,3 +56,6 @@ spider(process.argv[2], (err, filename, downloaded) => {
 
 
 // find links in a website then it print all the link titles
+
+// note
+// a callback in a function is executed when the function finishes, a callback within a function is the a reference in the the calling funcion

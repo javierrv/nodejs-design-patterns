@@ -23,6 +23,7 @@ function spider(url, callback) {
   });
 };
 
+// download
 function requestWebsite(url, filename, callback) {
   console.log(`downloading ${url}`);
   request(url, (err, response, body) => {
@@ -35,11 +36,12 @@ function requestWebsite(url, filename, callback) {
         return callback(err);
       }
       console.log(`downloaded and saved: ${url}`);
-      callback(null, url, true);
+      callback(null, url); // url won't be considered after
     });
   });
 }
 
+// saveFile
 function extractLinksFromBody(filename, body, callback) {
   const $ = cheerio.load(body);
 
