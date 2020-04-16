@@ -9,8 +9,19 @@ const utilities = require('./utilities');
 function spider(url, nesting, callback) {
   const filename = utilities.urlToFilename(url);
 
-  // download
-  
+  fs.exists(filename, exists => {
+    if (exists) {
+      return callback(null, filename, false);
+    }
+
+    // download
+    requestWebsite(url, filename, err => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, filename, true);
+    });
+  });
 };
 
 // download
