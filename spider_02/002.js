@@ -8,9 +8,10 @@ function spider(url, nesting, callback) {
   const filename = utilities.urlToFilename(url);
   fs.readFile(filename, 'utf8', (err, body) => {
     if(err) {
-      if(err.code !== 'ENOENT') {
+      if(err.code !== 'ENOENT') { // enoent means not existence
         return callback(err);
       }
+      // only handles error type for unexistence
       return download(url, filename, (err, body) => {
         if(err) {
           return callback(err);
@@ -41,7 +42,6 @@ function spiderLinks(currentUrl, body, nesting, callback) {
   iterate(0);
 }
 
-
 function download(url, filename, callback) {
   console.log(`Downloading ${url}`);
   request(url, (err, response, body) => {
@@ -53,7 +53,7 @@ function download(url, filename, callback) {
         return callback(err);
       }
       console.log(`Downloaded and saved: ${url}`);
-      callback(null, body);
+      callback(null, body); // body is not longer used
     });
   });
 }

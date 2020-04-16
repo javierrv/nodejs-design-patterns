@@ -9,30 +9,44 @@ const utilities = require('./utilities');
 function spider(url, nesting, callback) {
   const filename = utilities.urlToFilename(url);
 
-  fs.exists(filename, exists => {
-    if (exists) {
-      return callback(null, filename, false);
-    }
-
-    // download
-    requestWebsite(url, filename, err => {
-      if (err) {
+  fs.readFile(filename, 'utf8', (err, body) => {
+    if (err) {
+      if (err.code !== 'ENOENT') {  // enoent means not existence
         return callback(err);
       }
-      callback(null, filename, true);
-    });
+      // only handles error type for unexistence
+      return requestWebsite(url, filename, (err, body) => { // why return?
+        if (err) {
+          return callback(err);
+        }
+        // spiderLinks
+      });
+    }
+    // spiderLinks
   });
+
+  // fs.exists(filename, exists => {
+  //   if (exists) {
+  //     return callback(null, filename, false);
+  //   }
+
+  //   // download
+  //   requestWebsite(url, filename, err => {
+  //     if (err) {
+  //       return callback(err);
+  //     }
+  //     callback(null, filename, true);
+  //   });
+  // });
 };
 
 // download
 function requestWebsite(url, filename, callback) {
   console.log(`downloading ${url}`);
-
   request(url, (err, response, body) => {
     if (err) {
       return callback(err);
     }
-
     // saveFile
     utilities.extractLinksFromBody(filename, body, err => {
       if (err) {
@@ -88,7 +102,7 @@ function createDirectories(body, nesting, callback) {
   }
 }
 
-spider(process.argv[2], 2, (err, url) => {
+spider(process.argv[2], 1, (err, url) => {
   if (err) {
     console.log(err);
   }
