@@ -23,9 +23,9 @@ module.exports.urlToFilename = function urlToFilename(url) {
   return filename;
 };
 
-module.exports.extractLinksFromBody = function(body, nesting) {
+// saveFile
+module.exports.extractLinksFromBody = function(body, nesting, callback) {
   const $ = cheerio.load(body);
-  let links = [];
   
   let stream = fs.createWriteStream('medium-level-' + nesting + '_' +(nesting - 1), {
     flags: 'a'
@@ -35,10 +35,8 @@ module.exports.extractLinksFromBody = function(body, nesting) {
     if ($(elem).text() !== '' && $(elem).attr('href').substring(0, 8) === 'https://') {
       // stream.write($(elem).text() + '\t' + $(elem).attr('href') + '\n');
       stream.write(nesting + '_' + i + '\t' + $(elem).attr('href') + '\n');
-      links.push($(elem).attr('href'));
     }
   });
 
   stream.end();
-  return links;
 }
