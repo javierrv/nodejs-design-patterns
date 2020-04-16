@@ -1,20 +1,42 @@
-const request = require('request');
 const fs = require('fs');
 const readline = require('readline');
+const path = require('path');
+const request = require('request');
 const cheerio = require('cheerio');
+const mkdirp = require('mkdirp');
 const utilities = require('./utilities');
 
 function spider(url, nesting, callback) {
+  const filename = utilities.urlToFilename(url);
+
+  // download
+  
+};
+
+// download
+function requestWebsite(url, filename, callback) {
+  console.log(`downloading ${url}`);
+
   request(url, (err, response, body) => {
     if (err) {
-      callback(err);
+      return callback(err);
     }
-    if (!fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
-      createDirectories(body,nesting, callback);
-    }
-    callback(null, url);
+
+    // saveFile
+    utilities.extractLinksFromBody(filename, body, err => {
+      if (err) {
+        return callback(err);
+      }
+      console.log(`downloaded and saved ${url}`);
+      callback(null, url); // url is not longer considered
+    });
+
+    // if (!fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
+    //   createDirectories(body,nesting, callback);
+    // }
+    // callback(null, url);
   });
-};
+}
 
 function createDirectories(body, nesting, callback) {
   if (nesting === 0) {
@@ -61,28 +83,3 @@ spider(process.argv[2], 2, (err, url) => {
   }
   console.log(`directories created for `, url);
 });
-
-// modify this to create a file with the urls
-
-// spider(2)
-// 1.- creates a file (medium-level-2_1)
-  // link 2_1
-  // link 2_2
-  // link 2_3
-// 2.- create directories for that file (level-2_1-links)
-  // dir link 2_1
-    // spider (1)
-      // 1.- create a file (medium-level-1_0)
-        // link 1_1
-        // link 1_2
-      // 2.- create directories for that file (level-1_0-links)
-        // dir link 1_1
-          // spider (0)
-          // nextTick
-        // dir link 1_2
-          // spider (0)
-          // nextTick
-  // dir link 2_2
-    // spider (1)
-      // 1.- create a file (medium-level-1)
-  // dir link 2_3
