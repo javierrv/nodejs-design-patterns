@@ -2,9 +2,10 @@
 
 const fs = require('fs');
 const urlParse = require('url').parse;
-const slug = require('slug');
 const path = require('path');
 const cheerio = require('cheerio');
+const slug = require('slug');
+const mkdirp = require('mkdirp');
 
 module.exports.urlToFilename = function urlToFilename(url) {
   const parsedUrl = urlParse(url);
@@ -24,19 +25,26 @@ module.exports.urlToFilename = function urlToFilename(url) {
 };
 
 // saveFile
-module.exports.extractLinksFromBody = function(body, nesting, callback) {
+module.exports.extractLinksFromBody = function(filename, body, callback) {
   const $ = cheerio.load(body);
   
-  let stream = fs.createWriteStream('medium-level-' + nesting + '_' +(nesting - 1), {
-    flags: 'a'
-  });
-
-  $('body').find('a').each((i, elem) => {
-    if ($(elem).text() !== '' && $(elem).attr('href').substring(0, 8) === 'https://') {
-      // stream.write($(elem).text() + '\t' + $(elem).attr('href') + '\n');
-      stream.write(nesting + '_' + i + '\t' + $(elem).attr('href') + '\n');
+  mkdirp(path.dirname(filename), err => {
+    if (err) {
+      return callback(err);
     }
-  });
 
-  stream.end();
+    let stream = fs.createWriteStream(filename, {
+      flags: 'a'
+    });
+
+    $('body').find('a').each((i, elem) => {
+      if ($(elem).text() !== '' && $(elem).attr('href').substring(0, 8) === 'https://') {
+        // stream.write($(elem).text() + '\t' + $(elem).attr('href') + '\n');
+        // stream.write(nesting + '_' + i + '\t' + $(elem).attr('href') + '\n');
+        stream.write($(elem).attr('href') + '\n');
+      }
+    });
+
+    stream.end();
+  });
 }
