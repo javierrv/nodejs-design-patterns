@@ -19,13 +19,13 @@ function spider(url, nesting, callback) {
         spiderLinks(url, body, nesting, callback);
       });
     }
-    spiderLinks(url, body, nesting, callback);
+    spiderLinks(url, body, nesting, callback); // if file doesn't exists is never executed
   });
 }
 
-function spiderLinks(currentUrl, body, nesting, callback) {
+function spiderLinks(currentUrl, body, nesting, callback) { // this callback is from spider call
   if(nesting === 0) {
-    return process.nextTick(callback);
+    return process.nextTick(callback); // return makes after writeFile to continue the iteration?
   }
   const links = utilities.getPageLinks(currentUrl, body);
   function iterate(index) {
