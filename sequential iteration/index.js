@@ -63,43 +63,59 @@ function requestWebsite(url, filename, callback) {
   });
 }
 
-function createDirectories(body, nesting, callback) {
+function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be a similar spiderLinks, old createDirectories
   if (nesting === 0) {
-    console.log('nesting', nesting);
     return process.nextTick(callback);
   }
 
-  utilities.extractLinksFromBody(body, nesting);
+  const links = utilities.getPageLinks(currentUrl, body);
 
-  const parentDirectory = './level-' + nesting + '_' + (nesting - 1) + '-links';
+  function iterate(index) {
+    if (index === links.length) {
+      return callback();
+    }
 
-  if(!fs.existsSync(parentDirectory)){
-    fs.mkdirSync(parentDirectory);
-  }
-
-  if (fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
-    const rl = readline.createInterface({
-      input: fs.createReadStream('medium-level-' + nesting + '_' + (nesting - 1)),
-      output: process.stdout,
-      terminal: false
-    });
-
-    rl.on('line', line => {
-      const lineCopy = line.split('\t');
-
-      let dir = parentDirectory + '/' + lineCopy[0];
-
-      if(!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
+    spider(links[index], nesting - 1, err => {
+      if (err) {
+        return callback(err);
       }
-
-      spider(lineCopy[1], nesting - 1, err => {
-        if (err) {
-          return callback(err);
-        }
-      });
-    });
+      iterate(index + 1);
+    }); 
   }
+
+  iterate(0);
+
+  // utilities.extractLinksFromBody(body, nesting);
+
+  // const parentDirectory = './level-' + nesting + '_' + (nesting - 1) + '-links';
+
+  // if(!fs.existsSync(parentDirectory)){
+  //   fs.mkdirSync(parentDirectory);
+  // }
+
+  // if (fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
+  //   const rl = readline.createInterface({
+  //     input: fs.createReadStream('medium-level-' + nesting + '_' + (nesting - 1)),
+  //     output: process.stdout,
+  //     terminal: false
+  //   });
+
+  //   rl.on('line', line => {
+  //     const lineCopy = line.split('\t');
+
+  //     let dir = parentDirectory + '/' + lineCopy[0];
+
+  //     if(!fs.existsSync(dir)){
+  //       fs.mkdirSync(dir);
+  //     }
+
+  //     spider(lineCopy[1], nesting - 1, err => {
+  //       if (err) {
+  //         return callback(err);
+  //       }
+  //     });
+  //   });
+  // }
 }
 
 spider(process.argv[2], 1, (err, url) => {
