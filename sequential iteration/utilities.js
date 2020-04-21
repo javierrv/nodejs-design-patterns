@@ -47,6 +47,7 @@ module.exports.getPageLinks = function getPageLinks(currentUrl, body) {
 
 // saveFile
 module.exports.extractLinksFromBody = function(filename, body, callback) {
+  console.log('in extractLinksFromBody');
   const $ = cheerio.load(body);
   
   mkdirp(path.dirname(filename), err => {
@@ -67,5 +68,6 @@ module.exports.extractLinksFromBody = function(filename, body, callback) {
     });
 
     stream.end();
+    console.log('stream.end');
   });
 }

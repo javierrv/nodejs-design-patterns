@@ -16,6 +16,7 @@ function spider(url, nesting, callback) {
         if(err) {
           return callback(err);
         }
+        console.log('call spiderLinks');
         spiderLinks(url, body, nesting, callback);
       });
     }
@@ -28,6 +29,7 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this callback is 
     return process.nextTick(callback); // return makes after writeFile to continue the iteration?
   }
   const links = utilities.getPageLinks(currentUrl, body);
+  console.log('links', links);
   function iterate(index) {
     if(index === links.length) {
       return callback();
@@ -60,14 +62,13 @@ function download(url, filename, callback) {
 
 
 function saveFile(filename, contents, callback) {
-  mkdirp(path.dirname(filename), err => {
+  mkdirp(path.dirname(filename), err => { // inside directories map the url
     if(err) {
       return callback(err);
     }
     fs.writeFile(filename, contents, callback);
   });
 }
-
 
 spider(process.argv[2], 1, (err, filename, downloaded) => {
   if(err) {

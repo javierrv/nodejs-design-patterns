@@ -19,10 +19,11 @@ function spider(url, nesting, callback) {
         if (err) {
           return callback(err);
         }
-        // spiderLinks
+        console.log('call spiderLinks');
+        spiderLinks(url, body, nesting, callback);
       });
     }
-    // spiderLinks
+    spiderLinks(url, body, nesting, callback);
   });
 
   // fs.exists(filename, exists => {
@@ -48,18 +49,28 @@ function requestWebsite(url, filename, callback) {
       return callback(err);
     }
     // saveFile
-    utilities.extractLinksFromBody(filename, body, err => {
+    saveFile(filename, body, err => {
       if (err) {
         return callback(err);
       }
       console.log(`downloaded and saved ${url}`);
-      callback(null, url); // url is not longer considered
+      callback(null, body); // url is not longer considered
     });
+    console.log('body', body); // !!! body prints before stream.end
 
     // if (!fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
     //   createDirectories(body,nesting, callback);
     // }
     // callback(null, url);
+  });
+}
+
+function saveFile(filename, body, callback) {
+  mkdirp(path.dirname(filename), err => {
+    if (err) {
+      return callback(err);
+    }
+    fs.writeFile(filename, body, callback);
   });
 }
 
@@ -69,6 +80,7 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be 
   }
 
   const links = utilities.getPageLinks(currentUrl, body);
+  console.log('links', links);
 
   function iterate(index) {
     if (index === links.length) {
@@ -118,9 +130,12 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be 
   // }
 }
 
-spider(process.argv[2], 1, (err, url) => {
+spider(process.argv[2], 1, (err, filename, downloaded) => {
   if (err) {
     console.log(err);
+  } else if (downloaded) {
+    console.log(`completed the download of "${filename}"`)
+  } else {
+    console.log(`"${filename} was already downloaded"`);
   }
-  console.log(`directories created for `, url);
 });
