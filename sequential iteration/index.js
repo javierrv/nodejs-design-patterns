@@ -19,7 +19,6 @@ function spider(url, nesting, callback) {
         if (err) {
           return callback(err);
         }
-        console.log('call spiderLinks');
         spiderLinks(url, body, nesting, callback);
       });
     }
@@ -56,7 +55,7 @@ function requestWebsite(url, filename, callback) {
       console.log(`downloaded and saved ${url}`);
       callback(null, body); // url is not longer considered
     });
-    console.log('body', body); // !!! body prints before stream.end
+    // console.log('body', body); // !!! body prints before stream.end
 
     // if (!fs.existsSync('medium-level-' + nesting + '_' + (nesting - 1))) {
     //   createDirectories(body,nesting, callback);
@@ -80,7 +79,6 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be 
   }
 
   const links = utilities.getPageLinks(currentUrl, body);
-  console.log('links', links);
 
   function iterate(index) {
     if (index === links.length) {
@@ -96,8 +94,6 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be 
   }
 
   iterate(0);
-
-  // utilities.extractLinksFromBody(body, nesting);
 
   // const parentDirectory = './level-' + nesting + '_' + (nesting - 1) + '-links';
 
@@ -130,7 +126,7 @@ function spiderLinks(currentUrl, body, nesting, callback) { // this needs to be 
   // }
 }
 
-spider(process.argv[2], 1, (err, filename, downloaded) => {
+spider(process.argv[2], 2, (err, filename, downloaded) => {
   if (err) {
     console.log(err);
   } else if (downloaded) {
@@ -139,3 +135,6 @@ spider(process.argv[2], 1, (err, filename, downloaded) => {
     console.log(`"${filename} was already downloaded"`);
   }
 });
+
+// stopping this development I need to cover more topics
+// plan is to create a folder for each new link to be downloaded

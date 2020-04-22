@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const urlParse = require('url').parse;
+const urlResolve = require('url').resolve;
 const path = require('path');
 const cheerio = require('cheerio');
 const slug = require('slug');
@@ -47,7 +48,6 @@ module.exports.getPageLinks = function getPageLinks(currentUrl, body) {
 
 // saveFile
 module.exports.extractLinksFromBody = function(filename, body, callback) {
-  console.log('in extractLinksFromBody');
   const $ = cheerio.load(body);
   
   mkdirp(path.dirname(filename), err => {
@@ -60,7 +60,7 @@ module.exports.extractLinksFromBody = function(filename, body, callback) {
     });
 
     $('body').find('a').each((i, elem) => {
-      if ($(elem).text() !== '' && $(elem).attr('href').substring(0, 8) === 'https://') {
+      if ($(elem).text() !== '' && $(elem).attr('href') && $(elem).attr('href').substring(0, 8) === 'https://') {
         // stream.write($(elem).text() + '\t' + $(elem).attr('href') + '\n');
         // stream.write(nesting + '_' + i + '\t' + $(elem).attr('href') + '\n');
         stream.write($(elem).attr('href') + '\n');
@@ -68,6 +68,6 @@ module.exports.extractLinksFromBody = function(filename, body, callback) {
     });
 
     stream.end();
-    console.log('stream.end');
+    console.log('stream.end'); // extractLinksFromBody didn't work 'cause it's synchronous
   });
 }
