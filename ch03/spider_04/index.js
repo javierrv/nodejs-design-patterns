@@ -4,7 +4,16 @@ const mkdirp = require('mkdirp');
 const path = require('path');
 const utilities = require('./utilities');
 
+const TaskQueue = require('./taskQueue');
+const downloadQueue = new TaskQueue(2);
+
+let spidering = new Map();
 function spider(url, nesting, callback) {
+  if(spidering.has(url)) {
+    return process.nextTick(callback);
+  }
+  spidering.set(url, true);
+
   const filename = utilities.urlToFilename(url);
   fs.readFile(filename, 'utf8', (err, body) => {
     if(err) {
@@ -23,32 +32,31 @@ function spider(url, nesting, callback) {
   });
 }
 
-function spiderLinks(currentUrl, body, nesting, callback) { // this callback is from spider call
-  if(nesting === 0) {
-    return process.nextTick(callback); // return makes after writeFile to continue the iteration?
-  }
-  const links = utilities.getPageLinks(currentUrl, body);
-  console.log('links', links);
-
-  if (links.length === 0) {
+function spiderLinks(currentUrl, body, nesting, callback) {
+	if(nesting === 0) {
     return process.nextTick(callback);
   }
+  const links = utilities.getPageLinks(currentUrl, body);
 
-  let completed = 0, hasErrors = false;
+  if (links.length === 0) {
+		return process.nextTick(callback);
+	}
 
-  function done(err) {
-    if (err) {
-      hasErrors = true;
-      return callback(err);
-    }
-    if (++completed === links.length && !hasErrors) {
-      return callback;
-    }
-  }
-
-  links.forEach(link => {
-    spider(link, nesting - 1, done);
-  });
+	let completed = 0, hasErrors = false;
+	links.forEach(link => {
+		downloadQueue.pushTask(done => {
+			spider(link, nesting - 1, err => {
+				if (err) {
+					hasErrors = true;
+					return callback(err);
+				}
+				if (++completed === links.length && !hasErrors) {
+					callback();
+				}
+				done();
+			});
+		});
+	});
 }
 
 function download(url, filename, callback) {
@@ -77,7 +85,7 @@ function saveFile(filename, contents, callback) {
   });
 }
 
-spider(process.argv[2], 1, (err, filename, downloaded) => {
+spider(process.argv[2], 2, (err, filename, downloaded) => {
   if(err) {
     console.log(err);
   } else if(downloaded){

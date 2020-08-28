@@ -1,3 +1,4 @@
+// sequential iteration
 const request = require('request');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
@@ -16,23 +17,21 @@ function spider(url, nesting, callback) {
         if(err) {
           return callback(err);
         }
-        console.log('call spiderLinks');
         spiderLinks(url, body, nesting, callback);
       });
     }
-    spiderLinks(url, body, nesting, callback); // if file doesn't exists is never executed
+    spiderLinks(url, body, nesting, callback); // if file doesn't exist is never executed
   });
 }
 
 function spiderLinks(currentUrl, body, nesting, callback) { // this callback is from spider call
   if(nesting === 0) {
-    return process.nextTick(callback); // return makes after writeFile to continue the iteration?
+    return process.nextTick(callback); // avoid links and call the callback to contiue iteration
   }
-  const links = utilities.getPageLinks(currentUrl, body);
-  console.log('links', links);
+  let links = utilities.getPageLinks(currentUrl, body);
   function iterate(index) {
     if(index === links.length) {
-      return callback();
+      return callback(); // return to where you were and call again
     }
     spider(links[index], nesting - 1, err => {
       if(err) {
@@ -60,7 +59,6 @@ function download(url, filename, callback) {
   });
 }
 
-
 function saveFile(filename, contents, callback) {
   mkdirp(path.dirname(filename), err => { // inside directories map the url
     if(err) {
@@ -70,7 +68,7 @@ function saveFile(filename, contents, callback) {
   });
 }
 
-spider(process.argv[2], 1, (err, filename, downloaded) => {
+spider(process.argv[2], 2, (err, filename, downloaded) => {
   if(err) {
     console.log(err);
   } else if(downloaded){

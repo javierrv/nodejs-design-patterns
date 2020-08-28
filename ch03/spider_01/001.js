@@ -1,3 +1,4 @@
+// sequential execution
 const request = require('request');
 const fs = require('fs');
 const mkdirp = require('mkdirp');

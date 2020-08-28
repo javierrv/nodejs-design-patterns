@@ -1,3 +1,4 @@
+// sequential execution
 const fs = require('fs');
 const path = require('path');
 const request = require('request');
@@ -64,7 +65,7 @@ function extractLinksFromBody(filename, body, callback) {
   });
 }
 
-spider(process.argv[2], (err, filename, downloaded) => {
+spider(process.argv[2], (err, filename, downloaded) => { // url
   if (err) {
     console.log(err);
   } else if (downloaded) {
